@@ -134,6 +134,16 @@
             'Su Wan Ju', 'Yeo Wee Kiang', 'Tey Siew Leng', 'Woo Shiok Hwee', 'Wu Juanjuan', 'Chen Jingjing'
         ];
 
+        // Fixed oral examiner assigned to each MT class
+        const examinerByMtClass = {
+            '3CL1': 'Su Wan Ju',
+            '3CL2': 'Yeo Wee Kiang',
+            '3CL3': 'Tey Siew Leng',
+            '3CL4': 'Woo Shiok Hwee',
+            '3CL5': 'Wu Juanjuan',
+            '3CL6': 'Chen Jingjing'
+        };
+
         const defaultRoster = [
             // 3CL1
             { mtClass: '3CL1', formClass: 'P3-E', name: 'AARYA RAJ NAIDU' },
@@ -375,9 +385,12 @@
             }, [selectedMtClass, selectedFormClass]);
 
             const handleMtClassChange = (e) => {
-                setSelectedMtClass(e.target.value);
+                const mtClass = e.target.value;
+                setSelectedMtClass(mtClass);
                 setSelectedFormClass('');
                 setStudent({ name: '' });
+                // Automatically tag the assigned oral examiner for the selected MT class.
+                setCurrentExaminer(examinerByMtClass[mtClass] || '');
             };
 
             const handleFormClassChange = (e) => {
@@ -681,17 +694,12 @@
 
                                 <div className="hidden sm:block text-slate-300 mx-1">|</div>
 
-                                {/* 4. 主考老师 */}
+                                {/* 4. 主考老师：按 MT Class 自动指定 */}
                                 <div className="flex items-center space-x-1.5">
                                     <span className="text-purple-700">主考老师:</span>
-                                    <select 
-                                        value={currentExaminer}
-                                        onChange={handleExaminerChange}
-                                        className="border border-purple-200 rounded-xl px-3 py-1.5 bg-purple-50/50 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold text-purple-800 text-sm shadow-sm cursor-pointer"
-                                    >
-                                        <option value="">- 选择 -</option>
-                                        {examinersList.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
+                                    <div className="border border-purple-200 rounded-xl px-3 py-1.5 bg-purple-50/50 font-bold text-purple-800 text-sm shadow-sm min-w-36">
+                                        {currentExaminer || '- 请先选择 MT Class -'}
+                                    </div>
                                 </div>
                             </div>
 
