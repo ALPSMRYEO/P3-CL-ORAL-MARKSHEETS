@@ -480,7 +480,7 @@
             };
 
             // Submit only after duplicate safeguards have been completed.
-            const submitAssessment = async () => {
+            const submitAssessment = async (forceDuplicate = false) => {
                 setSubmitStatus('loading');
 
                 const payload = {
@@ -496,7 +496,8 @@
                     totalScore: grandTotal,
                     maxTotal: 30,
                     feedback: feedbackText,
-                    timestamp: new Date().toLocaleString('zh-CN', { hour12: false })
+                    timestamp: new Date().toLocaleString('zh-CN', { hour12: false }),
+                    forceDuplicate: forceDuplicate
                 };
 
                 try {
@@ -540,7 +541,7 @@
                     type: 'confirm',
                     onConfirm: () => {
                         setDialog(d => ({ ...d, isOpen: false }));
-                        submitAssessment();
+                        submitAssessment(true);
                     }
                 });
             };
@@ -590,14 +591,11 @@
 
                     await submitAssessment();
                 } catch (error) {
-                    // Do not silently submit if the Sheet duplicate check cannot be completed.
+                    // The preliminary browser check is helpful but is no longer allowed
+                    // to interrupt the oral examination. Code.gs performs the final,
+                    // authoritative duplicate check while holding the script lock.
                     setSubmitStatus('idle');
-                    setDialog({
-                        isOpen: true,
-                        title: '无法检查重复提交',
-                        message: '系统暂时无法连接 Google Sheet 检查这名考生是否已经提交成绩。为避免重复记录，本次没有提交。请检查网络或 Apps Script 部署后再试。',
-                        type: 'alert'
-                    });
+                    await submitAssessment(false);
                 }
             };
 
