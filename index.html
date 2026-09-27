@@ -508,13 +508,6 @@
                         body: JSON.stringify(payload)
                     });
 
-                    // Immediate safeguard against pressing Submit twice on this device.
-                    const submissionKey = `P3|${selectedMtClass}|${student.name}`.toUpperCase();
-                    localStorage.setItem(`oralSubmitted:${submissionKey}`, JSON.stringify({
-                        examiner: currentExaminer,
-                        timestamp: new Date().toLocaleString('zh-CN', { hour12: false })
-                    }));
-
                     setSubmitStatus('idle');
                     setDialog({
                         isOpen: true,
@@ -554,22 +547,11 @@
 
                 if (submitStatus === 'loading') return;
 
-                const submissionKey = `P3|${selectedMtClass}|${student.name}`.toUpperCase();
-                const localPrevious = localStorage.getItem(`oralSubmitted:${submissionKey}`);
-
-                // First safeguard: catches an accidental second click immediately,
-                // even before checking Google Sheet.
-                if (localPrevious) {
-                    let previous = null;
-                    try { previous = JSON.parse(localPrevious); } catch (e) {}
-                    showDuplicateWarning(previous);
-                    return;
-                }
-
                 setSubmitStatus('loading');
 
-                // Second safeguard: checks Google Sheet, so it also catches submissions
-                // made earlier by another examiner/device.
+                // Google Sheet is the single source of truth for duplicate checking.
+                // If a previous row has been deleted from the Sheet, the next submission
+                // is treated as a first submission.
                 try {
                     const checkUrl =
                         `${gasUrl}?action=check&level=P3&mtClass=${encodeURIComponent(selectedMtClass)}` +
